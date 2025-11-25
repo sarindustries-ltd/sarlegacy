@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Product } from '../types';
 import { XIcon, ShoppingCartIcon, StarIcon, ShieldCheckIcon, ZapIcon, CheckIcon, HeartIcon } from 'lucide-react';
 
@@ -16,6 +16,22 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 });
   const [isZoomed, setIsZoomed] = useState(false);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   if (!isOpen || !product) return null;
 
@@ -33,15 +49,22 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
       <div 
         className="absolute inset-0 bg-black/90 backdrop-blur-md transition-opacity animate-in fade-in duration-300"
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Modal Content */}
-      <div className="relative w-full max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl bg-nexus-950/80 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-300 max-h-[90dvh] md:max-h-auto overflow-y-auto md:overflow-visible">
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quick-view-title"
+        className="relative w-full max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl bg-nexus-950/80 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-300 max-h-[90dvh] md:max-h-auto overflow-y-auto md:overflow-visible"
+      >
         
         {/* Close Button */}
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 z-20 p-2.5 bg-black/50 hover:bg-nexus-accent text-white rounded-full backdrop-blur-md transition-all border border-white/10 hover:scale-110"
+          aria-label="Close quick view"
         >
           <XIcon size={18} />
         </button>
@@ -92,7 +115,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, isOpen, onClos
                </span>
             </div>
             
-            <h2 className="text-3xl md:text-4xl 3xl:text-5xl font-display font-bold text-white mb-4 leading-tight tracking-tight">
+            <h2 id="quick-view-title" className="text-3xl md:text-4xl 3xl:text-5xl font-display font-bold text-white mb-4 leading-tight tracking-tight">
               {product.name}
             </h2>
             

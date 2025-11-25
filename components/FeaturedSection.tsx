@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Product } from '../types';
 import { ArrowRightIcon, SparklesIcon, ShoppingBagIcon, HeartIcon } from 'lucide-react';

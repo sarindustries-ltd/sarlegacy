@@ -28,12 +28,27 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cartItem
     cvc: ''
   });
 
-  // Reset state when opening
   useEffect(() => {
     if (isOpen) {
         setStep('details');
     }
   }, [isOpen]);
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && step !== 'processing') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose, step]);
 
   if (!isOpen) return null;
 
@@ -45,7 +60,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cartItem
     e.preventDefault();
     setStep('processing');
 
-    // Simulate API Call
     setTimeout(() => {
         trackEvent('Purchase', {
             value: total,
@@ -65,15 +79,22 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cartItem
       <div 
         className="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity animate-in fade-in duration-500"
         onClick={step !== 'processing' ? onClose : undefined}
+        aria-hidden="true"
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-4xl bg-nexus-950 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 max-h-[90dvh]">
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+        className="relative w-full max-w-4xl bg-nexus-950 border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-300 max-h-[90dvh]"
+      >
         
         {step !== 'processing' && step !== 'success' && (
             <button 
             onClick={onClose}
             className="absolute top-4 right-4 z-20 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+            aria-label="Close checkout"
             >
             <XIcon size={24} />
             </button>
@@ -125,7 +146,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, cartItem
             {step === 'details' && (
                 <form onSubmit={handleSubmit} className="space-y-6 animate-in slide-in-from-right-4 duration-300">
                     <div>
-                        <h3 className="font-display font-bold text-white text-xl mb-1">Secure Checkout</h3>
+                        <h3 id="checkout-title" className="font-display font-bold text-white text-xl mb-1">Secure Checkout</h3>
                         <p className="text-slate-400 text-sm flex items-center gap-2">
                             <LockIcon size={12} className="text-green-500" />
                             Encrypted 256-bit SSL connection

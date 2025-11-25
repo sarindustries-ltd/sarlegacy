@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Chat, GenerateContentResponse } from "@google/genai";
 import { PRODUCTS, GEMINI_MODEL } from '../constants';
 

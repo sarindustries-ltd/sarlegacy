@@ -19,7 +19,23 @@ const GeminiAssistant: React.FC = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isLoading]);
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen]);
 
   const handleSendMessage = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -44,6 +60,9 @@ const GeminiAssistant: React.FC = () => {
 
       {/* Chat Window */}
       <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ai-assistant-title"
         className={`
           pointer-events-auto 
           flex flex-col
@@ -71,13 +90,13 @@ const GeminiAssistant: React.FC = () => {
                 </div>
             </div>
             <div>
-                <h3 className="font-display font-bold text-white text-base uppercase tracking-wider">SAR AI</h3>
+                <h3 id="ai-assistant-title" className="font-display font-bold text-white text-base uppercase tracking-wider">SAR AI</h3>
                 <span className="text-[10px] text-nexus-glow flex items-center gap-1 font-mono opacity-80">
                     <TerminalIcon size={10} /> V2.5.0 ONLINE
                 </span>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="relative z-10 p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-transparent hover:border-white/10">
+          <button onClick={() => setIsOpen(false)} className="relative z-10 p-2 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-colors border border-transparent hover:border-white/10" aria-label="Close AI Assistant">
             <XIcon size={18} />
           </button>
         </div>
@@ -85,24 +104,32 @@ const GeminiAssistant: React.FC = () => {
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth bg-gradient-to-b from-nexus-950 to-slate-950">
           {messages.map((msg, idx) => (
-            <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+            <div key={idx} className={`flex items-end gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+              {msg.role === 'model' && (
+                <div className="w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex-shrink-0 flex items-center justify-center mb-1">
+                  <BotIcon size={14} className="text-slate-400" />
+                </div>
+              )}
               <div 
-                className={`max-w-[85%] p-4 text-sm leading-relaxed shadow-sm backdrop-blur-md border ${
+                className={`max-w-[85%] p-3 px-4 text-sm leading-relaxed shadow-sm backdrop-blur-md border ${
                   msg.role === 'user' 
-                    ? 'bg-nexus-accent text-white rounded-2xl rounded-br-sm shadow-[0_0_15px_rgba(59,130,246,0.2)] border-nexus-accent' 
-                    : 'bg-slate-900/80 text-slate-200 rounded-2xl rounded-bl-sm border-white/10'
+                    ? 'bg-nexus-accent text-white rounded-2xl rounded-br-lg shadow-[0_0_15px_rgba(59,130,246,0.2)] border-nexus-accent' 
+                    : 'bg-slate-900/80 text-slate-200 rounded-2xl rounded-bl-lg border-white/10'
                 }`}
               >
-                {msg.role === 'model' && <div className="text-[10px] text-nexus-accent font-mono mb-1 opacity-70 uppercase">SAR AI Response</div>}
                 {msg.text}
               </div>
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start animate-in fade-in duration-300">
-              <div className="bg-slate-900/50 p-4 rounded-2xl rounded-bl-sm border border-white/10 flex items-center space-x-3">
-                <Loader2Icon size={16} className="animate-spin text-nexus-glow" />
-                <span className="text-xs text-slate-400 font-mono animate-pulse">PROCESSING...</span>
+            <div className="flex items-end gap-2 justify-start animate-in fade-in duration-300">
+              <div className="w-6 h-6 rounded-full bg-slate-800 border border-white/10 flex-shrink-0 flex items-center justify-center mb-1">
+                  <BotIcon size={14} className="text-slate-400" />
+              </div>
+              <div className="bg-slate-900/80 p-3 px-4 rounded-2xl rounded-bl-lg border border-white/10 flex items-center space-x-2">
+                <div className="w-1.5 h-1.5 bg-nexus-glow rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                <div className="w-1.5 h-1.5 bg-nexus-glow rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-1.5 h-1.5 bg-nexus-glow rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           )}
@@ -124,6 +151,7 @@ const GeminiAssistant: React.FC = () => {
             type="submit"
             disabled={isLoading || !input.trim()}
             className="p-3 bg-nexus-accent text-white rounded-xl hover:bg-nexus-accentHover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(59,130,246,0.3)] active:scale-95 border border-white/10"
+            aria-label="Send message"
           >
             <SendIcon size={18} />
           </button>

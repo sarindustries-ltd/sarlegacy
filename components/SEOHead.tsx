@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 import { Product } from '../types';
 import { APP_NAME, CURRENCY } from '../constants';
 
@@ -23,8 +22,6 @@ const SEOHead: React.FC<SEOHeadProps> = ({
 }) => {
   const siteTitle = title === APP_NAME ? title : `${title} | ${APP_NAME}`;
 
-  // 1. Product Schema (JSON-LD) for Google Rich Results
-  // This helps display Price, Availability, and Stars directly in Google Search
   const productSchema = product ? {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -52,13 +49,12 @@ const SEOHead: React.FC<SEOHeadProps> = ({
     "aggregateRating": {
       "@type": "AggregateRating",
       "ratingValue": product.rating,
-      "reviewCount": "24", // In a real app, this would be dynamic
+      "reviewCount": "24",
       "bestRating": "5",
       "worstRating": "1"
     }
   } : null;
 
-  // 2. Breadcrumb Schema for better navigation understanding
   const breadcrumbSchema = product ? {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -85,14 +81,22 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   } : null;
 
   return (
-    <Helmet>
-      {/* Basic Meta */}
+    <>
       <title>{siteTitle}</title>
+      
+      {/* Basic Meta */}
       <meta name="description" content={description} />
+      <meta name="theme-color" content="#020617" />
+      <link rel="icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3cpath d='M78.6,21.4C71.3,14.1,60.8,10,50,10C30.7,10,15,25.7,15,45c0,8.3,2.8,15.9,7.6,21.8 M21.4,78.6c7.3,7.3,17.8,11.4,28.6,11.4c19.3,0,35-15.7,35-35c0-8.3-2.8-15.9-7.6-21.8' stroke='%233b82f6' stroke-width='12' fill='none' stroke-linecap='round'/%3e%3c/svg%3e" />
       <link rel="canonical" href={url} />
       <meta name="robots" content="index, follow" />
 
-      {/* Open Graph / Facebook - Critical for Dynamic Ads */}
+      {/* Font Preconnects & Loading */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,300;1,400&family=Roboto+Mono:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet" />
+
+      {/* Open Graph / Facebook */}
       <meta property="og:site_name" content={APP_NAME} />
       <meta property="og:title" content={siteTitle} />
       <meta property="og:description" content={description} />
@@ -101,7 +105,6 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta property="og:image" content={image} />
       <meta property="og:image:alt" content={title} />
 
-      {/* Product Specific OG Tags for Catalog Matching */}
       {product && (
         <>
           <meta property="product:brand" content={APP_NAME} />
@@ -120,7 +123,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
 
-      {/* Structured Data Injection */}
+      {/* Structured Data */}
       {productSchema && (
         <script type="application/ld+json">
           {JSON.stringify(productSchema)}
@@ -131,7 +134,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
           {JSON.stringify(breadcrumbSchema)}
         </script>
       )}
-    </Helmet>
+    </>
   );
 };
 

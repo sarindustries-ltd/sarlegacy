@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { CartItem } from '../types';
 import { XIcon, MinusIcon, PlusIcon, Trash2Icon, ShoppingCartIcon, ArrowRightIcon, ShieldCheckIcon } from 'lucide-react';
 
@@ -14,6 +14,23 @@ interface CartDrawerProps {
 
 const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cartItems, onUpdateQuantity, onRemoveItem, onCheckout }) => {
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
 
   return (
     <>
@@ -21,15 +38,21 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cartItems, onU
       <div 
         className={`fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] transition-opacity duration-500 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
+        aria-hidden="true"
       />
       
       {/* Drawer */}
-      <div className={`fixed inset-y-0 right-0 w-full sm:max-w-md h-[100dvh] bg-nexus-950/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-[70] transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}>
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cart-drawer-title"
+        className={`fixed inset-y-0 right-0 w-full sm:max-w-md h-[100dvh] bg-nexus-950/95 backdrop-blur-2xl border-l border-white/10 shadow-2xl z-[70] transform transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${isOpen ? 'translate-x-0' : 'translate-x-full'} flex flex-col`}
+      >
           
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5 flex-shrink-0">
             <div className="flex items-center gap-3">
-                <h2 className="text-xl font-display font-bold text-white tracking-wide">YOUR CART</h2>
+                <h2 id="cart-drawer-title" className="text-xl font-display font-bold text-white tracking-wide">YOUR CART</h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-nexus-accent/20 text-nexus-accent text-xs font-bold border border-nexus-accent/20">
                   {cartItems.length}
                 </span>
@@ -59,8 +82,12 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, cartItems, onU
                 </button>
               </div>
             ) : (
-              cartItems.map(item => (
-                <div key={item.id} className="group flex gap-4 p-4 rounded-2xl bg-white/5 border border-transparent hover:border-white/10 transition-all hover:shadow-lg relative">
+              cartItems.map((item, index) => (
+                <div 
+                  key={item.id} 
+                  className="group flex gap-4 p-4 rounded-2xl bg-white/5 border border-transparent hover:border-white/10 transition-all hover:shadow-lg relative animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms`}}
+                >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0 border border-white/5">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" />
                   </div>
